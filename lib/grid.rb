@@ -62,21 +62,38 @@ class Grid
   end
 
   def to_s
-    output = "+" + "---+" * @cols + "\n"
+    # First line
+    output = "+"
     each_row do |row|
-      top = "|"
-      bottom = "+"
       row.each do |cell|
-        cell = CellSquared.new(-1, -1) unless cell
-        body = "   "
-        east_boundary = (cell.linked?(cell.east)) ? " " : "|"
-        top << body << east_boundary
-
-        south_boundary = (cell.linked?(cell.south)) ? "   " : "---"
-        corner = "+"
-        bottom << south_boundary << corner
+        output << "---"
+        output << (cell.linked?(cell.east) ? "-" : "+")
       end
-      output << top << "\n"
+      break
+    end
+    output << "\n"
+
+    # Other lines
+    each_row do |row|
+      middle = "|"
+      bottom = row[0].linked?(row[0].south) ? "|" : "+"
+      row.each do |cell|
+        east = cell.east
+        south = cell.south
+        southeast = cell.east.south if cell.east
+        middle << (cell.linked?(east) ? "    " : "   |")
+        bottom << (cell.linked?(south) ? "   " : "---")
+        if cell.linked?(east) && (!south || south.linked?(southeast))
+          bottom << "-"
+        elsif cell.linked?(south) && (!east || east.linked?(southeast))
+          bottom << "|"
+        elsif cell.linked?(east) && east.linked?(southeast)
+          bottom << "|"
+        else
+          bottom << "+"
+        end
+      end
+      output << middle << "\n"
       output << bottom << "\n"
     end
     output
